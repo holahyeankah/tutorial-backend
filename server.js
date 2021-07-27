@@ -2,6 +2,9 @@ const express= require('express')
 const path = require ('path')
 const bodyParser = require('body-parser')
 const cors = require('cors')
+const routes =require('./server/Routes/app')
+
+
 
 require('dotenv').config();
 const app= express();
@@ -10,13 +13,12 @@ const app= express();
 app.use(cors())
 app.use(bodyParser.json())
 app.use(bodyParser.urlencoded({extended:false}))
-const tutorial= require('./server/routes/Tutorial')
-const user= require('./server/routes/User')
 
 
 
-app.use('/', tutorial)
-app.use('/', user)
+
+app.use(routes)
+
 
 
 

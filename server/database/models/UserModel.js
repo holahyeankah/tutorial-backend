@@ -5,14 +5,10 @@ module.exports=(sequelize, DataTypes)=>{
             primaryKey:true,
             autoIncrement:true
         },
-        first_name:{
+        fullname:{
             type:DataTypes.STRING(100),
             allowNull:false
 
-        },
-        last_name:{
-            type:DataTypes.STRING(100),
-            allowNull:false
         },
         email:{
             type:DataTypes.STRING(100),
@@ -23,10 +19,16 @@ module.exports=(sequelize, DataTypes)=>{
             },
         },
         password:{
-            type:DataTypes.STRING(100),
+            type:DataTypes.STRING(200),
             allowNull:false,
 
-        }
+        },
+       
+        postal_code:DataTypes.STRING(100),
+        address:DataTypes.STRING(100),
+        country:DataTypes.STRING(100),
+        state:DataTypes.STRING(100),
+        mob_phone:DataTypes.STRING(100),
         
     },
 

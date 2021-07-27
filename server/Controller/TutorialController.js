@@ -1,7 +1,6 @@
 const db = require('../database/models');
-const {Tutorial}=db;
+const {Tutorial, User}=db;
 const {Op}= require ('sequelize')
-const {validationResult} =require ('express-validator');
 const dotenv= require ('dotenv');
 
 dotenv.config();
@@ -9,13 +8,8 @@ dotenv.config();
 const createTutorial=(req, res)=>{  
     const {title, description, published}=req.body;
     console.log(req.body)
-const errors=validationResult(req);
-
-if(!errors.isEmpty()){
-res.status(404).json({errors:errors.array()})
-}
-if(!title){
-return res.status(404).json("Content cannot be empty")
+if(!title && description){
+return res.status(404).json({message:"All field is required"})
 }
 const tutorial={
     title,
@@ -31,7 +25,7 @@ Tutorial.create(tutorial)
     
 }).catch(err=>{
     console.log(err)
-    res.status(500).json("Tutorial cant be created")
+    res.status(500).json({ message:"Error occured while creating tutorial"})
 })
 
 }
@@ -51,33 +45,33 @@ Tutorial.findByPk(id)
 }
 
 const findAllPublished=(req, res)=>{
-    const {published}=req.body;
     Tutorial.findAll({
         where:{
             published:true
         }
     }).then(published=>{
-        if(published){
-        return res.status(200).json({message:"Published gotten", published})
+        if(!published){
+        return res.status(404).json({message:"No published title"})
         }
-        res.status(404).json("Nothing published")
+        res.status(200).json({message:" Published tutorials", published})
        
     }).catch(err=>{
         res.status(500).json("Fail to get published", err)
     })
 }
 const updateTutorial=(req, res)=>{
-    const{tutorial, description, published}=req.body
+    const{title, description, published}=req.body
+    const{id}=req.params;
     Tutorial.findOne({
         where:{
-            id:req.params.id
+            id
         }
     }).then(post=>{
         if(!post){
-            return res.status(404).json("post not found")
+            return res.status(404).json("Post not found")
         }
         post.update({
-            tutorial: tutorial || post.tutorial,
+            title: title || post.title,
            description: description || post.description,
             published: published || post.published
 
@@ -90,7 +84,7 @@ const updateTutorial=(req, res)=>{
                 }
             })
         }).catch(err=>{
-            res.status(500).json("Tutorial fail to update")
+            res.status(500).json({message:"Tutorial fail to update", err})
         })
     })
 }
@@ -99,10 +93,10 @@ const deleteTutorial=(req, res)=>{
     Tutorial.findByPk(id)
     .then(tutorial=>{
         if(!tutorial){
-            return res.status(404).json("Tutorial doesnt exist")
+            return res.status(404).json({message:"Tutorial doesnt exist"})
         }
         tutorial.destroy();
-        return res.status(200).json({message:`Tutorial with id:${id}, deleted successfully`})
+        return res.status(200).json({message:`Tutorial with id:${id} deleted successfully`, tutorial})
     }).catch(err=>{
         res.status(500).json("Tutorial fail to delete")
     })
@@ -115,44 +109,22 @@ const deleteAllTutorial=(req, res)=>{
     }).then(tutorial=>{
         res.status(200).json({message:"Tutorial delete successfully", tutorial})
     }).catch(err=>{
-        res.status(500).json("Tutorial fail to delete")
+        res.status(500).json("Tutorial failed to delete")
     })
     
 }
 const getAllTutorial=(req, res)=>{
-    const {page, limit, title}=req.query;
-    const offset=parseInt((page-1), 10)*limit;
-    const queryBuilder={
-        distinct:true,
-        offset:parseFloat(offset),
-        limit:parseFloat(limit)
-    }
-    if(title){
-        queryBuilder.where={
-            title:{
-                [Op.like]:`%${title}`
-            }
-        }
-    }
-Tutorial.findAndCountAll(queryBuilder)
+    const {title}=req.query;
+    const condition= title ?{title: { [Op.like] : `%${title}%`}}: null;
+      
+Tutorial.findAndCountAll({where:condition})
 .then(tutorial=>{
-    if(tutorial.rows.length <1){
-        return res.status(404).json("Tutorial not found")
-    }
-    const currentPage=page;
-    const pageSize=limit;
-    const totalPages=Math.ceil(tutorial.count/pageSize)
-    res.status(200).json({
-        paginationMeta:{
-            currentPage,
-            pageSize,
-            totalPages,
-            totalItems:tutorial.count
-        },
-        tutorials:tutorial.rows
-    })
+    if(!tutorial){
+        return res.status(404).json({message:"Tutorial not found"})
+    }  
+    res.status(200).json({totalItems:tutorial.count, tutorials:tutorial.rows })
 }).catch(err=>{
-    res.status(500).json("Some error occur while retrieving tutorials")
+    res.status(500).json("Error occur while retrieving tutorials")
 })
 
 }

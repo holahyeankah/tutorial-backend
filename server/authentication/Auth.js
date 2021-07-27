@@ -1,11 +1,14 @@
 const jwt = require('jsonwebtoken');
 
+
+const secret=  process.env.SECRET_KEY
+
 const verifyToken=(req, res, next)=>{
     const bearerHeader= req.headers['authorization'];
     if(typeof bearerHeader !=='undefined'){
     const bearer= bearerHeader.split(' ');
     const bearerToken=bearer[1];
-        jwt.verify(bearerToken, process.env.SECRET_KEY, (err, token) => {
+        jwt.verify(bearerToken, secret, (err, token) => {
             if (err) {
                return res.status(401).json({ message: 'unverified token'})
             } else {
