@@ -9,6 +9,6 @@ const router=express.Router();
 router.post('/user/register', UserInputValidation.signUpInputValidation, signUp)
 router.post('/user/login',UserInputValidation.loginInputValidation, signIn)
 router.put('/profile', verifyToken, updateUserProfile)
-router.get('/profile',verifyToken, getUserProfile)
+router.get('/profile/:id',verifyToken, getUserProfile)
 
 module.exports = router;

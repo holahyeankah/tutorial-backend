@@ -1,5 +1,5 @@
 const db = require('../database/models');
-const {Tutorial, User}=db;
+const {Tutorial}=db;
 const {Op}= require ('sequelize')
 const dotenv= require ('dotenv');
 
@@ -7,7 +7,6 @@ dotenv.config();
 
 const createTutorial=(req, res)=>{  
     const {title, description, published}=req.body;
-    console.log(req.body)
 if(!title && description){
 return res.status(404).json({message:"All field is required"})
 }
@@ -61,6 +60,7 @@ const findAllPublished=(req, res)=>{
 }
 const updateTutorial=(req, res)=>{
     const{title, description, published}=req.body
+    console.log(req.body.published)
     const{id}=req.params;
     Tutorial.findOne({
         where:{
@@ -73,9 +73,10 @@ const updateTutorial=(req, res)=>{
         post.update({
             title: title || post.title,
            description: description || post.description,
-            published: published || post.published
+            published: published 
 
         }).then(data=>{
+           
            return res.status(200).json({
                 updatedTutorial:{
                     data,
@@ -84,21 +85,24 @@ const updateTutorial=(req, res)=>{
                 }
             })
         }).catch(err=>{
+            console.log(err)
             res.status(500).json({message:"Tutorial fail to update", err})
         })
     })
 }
 const deleteTutorial=(req, res)=>{
-    const id=req.params.id
-    Tutorial.findByPk(id)
-    .then(tutorial=>{
-        if(!tutorial){
-            return res.status(404).json({message:"Tutorial doesnt exist"})
+    Tutorial.destroy({
+        where:{
+            id:req.params.id
         }
-        tutorial.destroy();
-        return res.status(200).json({message:`Tutorial with id:${id} deleted successfully`, tutorial})
-    }).catch(err=>{
-        res.status(500).json("Tutorial fail to delete")
+    })
+    .then(tutorial=>{
+        if(!tutorial) return res.status(404).json({message:"No tutorial found"})
+        return res.status(200).json({message:"Tutorial deleted successfully", tutorial})
+    })
+
+         .catch(err=>{
+        res.status(500).json({message:"Tutorial failed to delete", err})
     })
 }
 const deleteAllTutorial=(req, res)=>{
@@ -115,14 +119,16 @@ const deleteAllTutorial=(req, res)=>{
 }
 const getAllTutorial=(req, res)=>{
     const {title}=req.query;
-    const condition= title ?{title: { [Op.like] : `%${title}%`}}: null;
+    const condition= title ?
+    {title: 
+    {[Op.like] : `%${title}%`}}: null;
       
-Tutorial.findAndCountAll({where:condition})
+Tutorial.findAll({where:condition})
 .then(tutorial=>{
     if(!tutorial){
         return res.status(404).json({message:"Tutorial not found"})
     }  
-    res.status(200).json({totalItems:tutorial.count, tutorials:tutorial.rows })
+    res.status(200).json({ message:"Tutorials gotten succesfully",  tutorials:tutorial })
 }).catch(err=>{
     res.status(500).json("Error occur while retrieving tutorials")
 })

@@ -9,16 +9,14 @@ dotenv.config();
 const secret =process.env.SECRET_KEY
 
 const signUp=(req, res)=>{
- const{fullname, email, password}=req.body;
- console.log(req.body)
-    
+ const{fullname, email, password}=req.body;    
 User.findOne({
     where:{
         email
     }
 }).then(user=>{
     if(user){
-        return res.status(404).json({message:'Email in use by another user'})
+        return res.status(404).json({message:'Email already exist '})
     }
     const saltRounds=10; 
     const hash=bcrypt.hashSync(password, saltRounds)
@@ -61,16 +59,15 @@ const signIn=(req,res)=>{
                      }
                        
                   jwt.sign({payrol},secret, {expiresIn: '1d'}, (err, token)=>{
-                            res.json({message:
+                            res.status(200).json({message:
                             "Login successfuly",
                               token,                     
                              } )
                      
              })
             } else{
-                res.status(404).json({message:'Incorrect password'})
-                       
-               
+                res.status(404).json({message:'Incorrect password', err})
+                          
             }
         
              })
@@ -80,7 +77,7 @@ const signIn=(req,res)=>{
        
     }
     const updateUserProfile=(req, res)=>{
-        const {postal_code, state, address, mob_phone, country}=req.body;
+        const {postal_code, state, address, mob_phone}=req.body;
         User.findByPk(req.decoded.payrol.id)
         .then(user=>{
             if(!user){
@@ -93,7 +90,6 @@ const signIn=(req,res)=>{
                 postal_code:postal_code ||user.postal_code,
                 state:state || user.state,
                 addrtess: address || user.address,
-                country: country || user.country,
                 mob_phone : mob_phone || user.mob_phone
 
             })
@@ -113,12 +109,16 @@ const signIn=(req,res)=>{
     };
     
     const getUserProfile=(req,res)=>{
-        User.findByPk(req.decoded.payrol.id,(error, profile)=>{
-            if(error){
-                return(error)
-            }else{
-                res.status(200).json({message: 'Profile gotten successfully', profile})
+        User.findOne({
+            where:{
+user_id:req.params.id
             }
+        })
+        .then(user=>{
+            if(!user){
+                return res.status(400).json({message:"No such user"})
+            }
+            return res.status(200).json({message:"User gotten successfully", user})
         })
     }
    
