@@ -5,8 +5,7 @@ const dotenv= require ('dotenv');
 dotenv.config();
 
 const secret=  process.env.SECRET_KEY
-
-export const verifyToken=(req, res, next)=>{
+const verifyToken=(req, res, next)=>{
     const bearerHeader= req.headers['authorization'];
     if(typeof bearerHeader !=='undefined'){
     const bearer= bearerHeader.split(' ');
@@ -25,5 +24,6 @@ export const verifyToken=(req, res, next)=>{
         return res.status(404).json({message:'Unverified'})
     }
 }
+module.exports=verifyToken
 
 
