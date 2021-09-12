@@ -31,12 +31,17 @@ Tutorial.create(tutorial)
 
 const getOneTutorial=(req, res)=>{
     const id=req.params.id
-Tutorial.findByPk(id)
+Tutorial.findOne({
+    where:{
+        id
+}})
 .then(tutorial=>{
-    if(tutorial){
-        return res.status(200).json({message:"Tutorial fetched successfully", tutorial})    
+    if(!tutorial){
+       res.status(404).json("No tutorial found")  
     }
-    res.status(404).json("No tutorial found")
+
+    return res.status(200).json({message:"Tutorial fetched successfully", tutorial}) 
+    
    
 }).catch(err=>{
     res.status(500).json("Fail to get tutorial")
@@ -59,7 +64,7 @@ const findAllPublished=(req, res)=>{
     })
 }
 const updateTutorial=(req, res)=>{
-    const{title, description, published}=req.bod
+    const{title, description, published}=req.body
     const{id}=req.params;
     Tutorial.findOne({
         where:{

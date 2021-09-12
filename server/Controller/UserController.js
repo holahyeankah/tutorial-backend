@@ -26,8 +26,7 @@ User.findOne({
 
    User.create({
        fullname,
-      
-       password:hash,
+      password:hash,
    }).then(user=>{
    const token=jwt.sign(
          {
@@ -35,8 +34,8 @@ User.findOne({
         email:user.email,
     }, secret, {expiresIn:"1d"}
     );
-     res.status(200).json({message:'Registration successful', user:{
-         ...customer.toAuthJson(),
+     return res.status(200).json({message:'Registration successful', user:{
+         customer,
          token
      }})
   
@@ -81,7 +80,7 @@ const signIn=(req,res)=>{
                 return res.status(400).json({message:"Email or password incorrect"})
             }
             return res.status(404).json({
-                message:"Kindly register"
+                message:"You are yet to register."
             })
         })
     }

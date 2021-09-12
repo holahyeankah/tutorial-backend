@@ -2,14 +2,10 @@ const express= require('express')
 const path = require ('path')
 const bodyParser = require('body-parser')
 const cors = require('cors')
-const errorhandler= require ('errorhandler')
 const dotenv= require ('dotenv');
 const routes =require('./server/Routes/app')
 
 dotenv.config();
-
-
-
 
 
 const app= express()

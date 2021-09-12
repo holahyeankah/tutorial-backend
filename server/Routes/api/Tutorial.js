@@ -1,7 +1,7 @@
 const express=require("express")
 const {createTutorial, findAllPublished, getAllTutorial, getOneTutorial, updateTutorial, deleteTutorial, deleteAllTutorial}=require ("../../Controller/TutorialController");
 
-const {verifyToken}=require("../../authentication/Auth")
+const verifyToken= require("../../authentication/Auth")
 
 const router=express.Router();
 
