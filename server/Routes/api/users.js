@@ -1,7 +1,7 @@
 const express=require("express")
-const {signUp, signIn, getUserProfile, updateUserProfile}=require ("../../Controller/UserController");
+const {signUp, signIn, getUserProfile, verifyToken,  updateUserProfile}=require ("../../Controller/UserController");
 const {UserInputValidation} = require ('../../middleware/validation');
-const {verifyToken}=require("../../authentication/Auth")
+
 
 
 const router=express.Router();
