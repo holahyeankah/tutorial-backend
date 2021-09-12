@@ -9,7 +9,10 @@ dotenv.config();
 const secret =process.env.SECRET_KEY
 
 const signUp=(req, res)=>{
- const{fullname, email, password}=req.body;    
+ const{fullname, password}=req.body;  
+ let{email}=req.body;
+ email=email.toLowerCase();
+   
 User.findOne({
     where:{
         email
@@ -23,59 +26,67 @@ User.findOne({
 
    User.create({
        fullname,
-       email,
+      
        password:hash,
    }).then(user=>{
-    return res.status(200).json({message:"Registered successfully", user})
-
+   const token=jwt.sign(
+         {
+        id:user.user_id, 
+        email:user.email,
+    }, secret, {expiresIn:"1d"}
+    );
+     res.status(200).json({message:'Registration successful', user:{
+         ...customer.toAuthJson(),
+         token
+     }})
+  
    }).catch(err=>{
-       res.status(500).json({message:'Error while creating user'})
+       res.status(404).json({message:'Unable to create user'})
    })
-})
-
-    
+})   
 }
 
 
 const signIn=(req,res)=>{
-    const {email, password}= req.body;
-    User.findOne({
-        
+    const {password}= req.body;
+    let {email}=req.body;
+    email=email.toLowerCase();
+
+    User.findOne({      
             where:{
                 email     
             }
         })
         .then(user=>{
-         if(!user)
-          return res.status(404).json({message:'User does not exist'})
-             bcrypt.compare(password, user.password, (err, result)=>{
-                 if (err){
-                     throw new Error(err)
-                 };
-                 if (result){  
-                  const payrol={
-                         id:user.user_id,
-                        fullname:user.fullname,
-                     }
-                       
-                  jwt.sign({payrol},secret, {expiresIn: '1d'}, (err, token)=>{
-                            res.status(200).json({message:
-                            "Login successfuly",
-                              token,                     
-                             } )
-                     
-             })
-            } else{
-                res.status(404).json({message:'Incorrect password', err})
-                          
+            if(user){
+                if(bcrypt.compareSync(password, user.password)){
+                    const token=jwt.sign(
+                        {
+                        id:user.user_id,
+                        email:user.email,
+                        },
+                        secret, {expiresIn:"1d"}
+                    );
+                  return res.status(200).json({
+                        message:"Congratulations, you are logged in",
+                        user:{
+                            email:user.email,
+                            name:user.fullname,
+                            token
+
+                        }
+                    })
+
+                }
+                return res.status(400).json({message:"Email or password incorrect"})
             }
-        
-             })
-        }).catch(err=>{
-                res.status(500).json({message:"Some error occurred:",  err})
+            return res.status(404).json({
+                message:"Kindly register"
+            })
         })
-       
     }
+                          
+            
     const updateUserProfile=(req, res)=>{
         const {postal_code, state, address, mob_phone}=req.body;
         User.findByPk(req.decoded.payrol.id)
@@ -103,7 +114,7 @@ const signIn=(req,res)=>{
                 }
             })
         }).catch(err=>{
-            res.status(500).json({message:"Eroor while updating profile"})
+            res.status(500).json({message:"Error while updating profile"})
         })
        
     };

@@ -14,7 +14,7 @@ const tutorial={
     title,
     description,
     published: published ? published :false,
-    user_id:req.decoded.payrol.id,
+    user_id:req.decoded.id,
     
 }
 Tutorial.create(tutorial)
@@ -23,8 +23,8 @@ Tutorial.create(tutorial)
     
     
 }).catch(err=>{
-    console.log(err)
-    res.status(500).json({ message:"Error occured while creating tutorial"})
+
+    res.status(404).json({ message:"Error occured while creating tutorial"})
 })
 
 }
@@ -36,7 +36,7 @@ Tutorial.findByPk(id)
     if(tutorial){
         return res.status(200).json({message:"Tutorial fetched successfully", tutorial})    
     }
-    res.status(404).json("No such tutorial")
+    res.status(404).json("No tutorial found")
    
 }).catch(err=>{
     res.status(500).json("Fail to get tutorial")
@@ -59,8 +59,7 @@ const findAllPublished=(req, res)=>{
     })
 }
 const updateTutorial=(req, res)=>{
-    const{title, description, published}=req.body
-    console.log(req.body.published)
+    const{title, description, published}=req.bod
     const{id}=req.params;
     Tutorial.findOne({
         where:{
@@ -75,13 +74,11 @@ const updateTutorial=(req, res)=>{
            description: description || post.description,
             published: published 
 
-        }).then(data=>{
-           
+        }).then(data=>{         
            return res.status(200).json({
                 updatedTutorial:{
                     data,
                     message:"Tutorial updated successfully"
-
                 }
             })
         }).catch(err=>{
@@ -105,6 +102,7 @@ const deleteTutorial=(req, res)=>{
         res.status(500).json({message:"Tutorial failed to delete", err})
     })
 }
+
 const deleteAllTutorial=(req, res)=>{
    
     Tutorial.destroy({
