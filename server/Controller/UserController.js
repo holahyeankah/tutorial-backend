@@ -11,8 +11,7 @@ const secret =process.env.SECRET_KEY
 const signUp=(req, res)=>{
  const{fullname, password}=req.body;  
  let{email}=req.body;
- email=email.toLowerCase();
-   
+ email=email.toLowerCase();   
 User.findOne({
     where:{
         email
@@ -23,28 +22,30 @@ User.findOne({
     }
     const saltRounds=10; 
     const hash=bcrypt.hashSync(password, saltRounds)
+    User.create({
+        fullname,
+        email,
+       password:hash,
+    })
+       .then(user=>{
+           const token=jwt.sign({id:user.user_id},secret, {expiresIn:"1d"})
+          return res.status(201).json({message:"Registartion successful", 
+          user:{
+               id:user.user_id,
+               token
+              
+           }})
+          
+       })
+       .catch(err=>{
+           res.status(404).json({message:"Unable to register user"})
 
-   User.create({
-       fullname,
-       email,
-      password:hash,
-   }).then(user=>{
-   const token=jwt.sign(
-         {
-        id:user.user_id, 
-        email:user.email,
-    }, secret, {expiresIn:"1d"}
-    );
-     return res.status(200).json({message:'Registration successful', user:{
-         customer,
-         token
-     }})
-  
-   }).catch(err=>{
-       res.status(404).json({message:'Unable to create user'})
-   })
-})   
-}
+       }) 
+
+ 
+})
+ 
+};
 
 
 const signIn=(req,res)=>{
@@ -67,11 +68,11 @@ const signIn=(req,res)=>{
                         },
                         secret, {expiresIn:"1d"}
                     );
-                  return res.status(200).json({
+                  return res.status(201).json({
                         message:"Congratulations, you are logged in",
                         user:{
+                            id:user.user_id,
                             email:user.email,
-                            name:user.fullname,
                             token
 
                         }
@@ -81,7 +82,7 @@ const signIn=(req,res)=>{
                 return res.status(400).json({message:"Email or password incorrect"})
             }
             return res.status(404).json({
-                message:"You are yet to register."
+                message:"You are yet to register. kindly sign up"
             })
         })
     }

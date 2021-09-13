@@ -5,6 +5,7 @@ const dotenv= require ('dotenv');
 dotenv.config();
 
 const secret=  process.env.SECRET_KEY
+
 const verifyToken=(req, res, next)=>{
     const bearerHeader= req.headers['authorization'];
     if(typeof bearerHeader !=='undefined'){
@@ -12,7 +13,7 @@ const verifyToken=(req, res, next)=>{
     const bearerToken=bearer[1];
         jwt.verify(bearerToken, secret, (err, token) => {
             if (err) {
-               return res.status(401).json({ message:'Unverified token'})
+               return res.status(401).json({ message:'Unverify token'})
             } else {
                 req.decoded = token;
                 return next();
