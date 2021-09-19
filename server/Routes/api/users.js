@@ -2,8 +2,6 @@ const express=require("express")
 const {signUp, signIn, getUserProfile, updateUserProfile}=require ("../../Controller/UserController");
 const {UserInputValidation} = require ('../../middleware/validation');
 
-
-
 const router=express.Router();
 
 router.post('/user/register', UserInputValidation.signUpInputValidation, signUp)

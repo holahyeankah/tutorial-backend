@@ -6,27 +6,25 @@ const dotenv= require ('dotenv');
 dotenv.config();
 
 const createTutorial=(req, res)=>{  
-    const {title, description, published}=req.body;
-if(!title && description){
-return res.status(404).json({message:"All field is required"})
-}
+const {title, description, published}=req.body;
 const tutorial={
-    title,
-    description,
-    published: published ? published :false,
-    user_id:req.decoded.id,
+ title,
+ description,
+ published: published ? published :false,
+ user_id:req.decoded.userId,
     
 }
+
 Tutorial.create(tutorial)
 .then(tutorial=>{
-  res.status(200).json({message:"Tutorial created successfully", tutorial})
-    
-    
+    if(!tutorial){
+        res.status(404).json({message:"Tutorial failed to be created"})
+    }
+ return res.status(200).json({message:"Tutorial created successfully", tutorial})
+       
 }).catch(err=>{
-
-    res.status(404).json({ message:"Error occured while creating tutorial"})
+ res.status(404).json({ message:"Error occured while creating tutorial", err})
 })
-
 }
 
 const getOneTutorial=(req, res)=>{
@@ -39,10 +37,10 @@ Tutorial.findOne({
     if(!tutorial){
        res.status(404).json("No tutorial found")  
     }
+    else{
+        return res.status(200).json({message:"Tutorial fetched successfully", tutorial}) 
+    }
 
-    return res.status(200).json({message:"Tutorial fetched successfully", tutorial}) 
-    
-   
 }).catch(err=>{
     res.status(500).json("Fail to get tutorial")
 })
@@ -54,12 +52,13 @@ const findAllPublished=(req, res)=>{
             published:true
         }
     }).then(published=>{
-        if(!published){
-        return res.status(404).json({message:"No published title"})
-        }
-        res.status(200).json({message:" Published tutorials", published})
+     if(!published){
+     return res.status(404).json({message:"No published title"})
+     }
+     res.status(200).json({message:" Published tutorials", published})
        
     }).catch(err=>{
+        
         res.status(500).json("Fail to get published", err)
     })
 }
@@ -72,26 +71,26 @@ const updateTutorial=(req, res)=>{
         }
     }).then(post=>{
         if(!post){
-            return res.status(404).json("Post not found")
+         return res.status(404).json("Post not found")
         }
-        post.update({
-            title: title || post.title,
-           description: description || post.description,
-            published: published 
+  post.update({
+  title: title || post.title,
+  description: description || post.description,
+published: published 
 
-        }).then(data=>{         
-           return res.status(200).json({
-                updatedTutorial:{
-                    data,
-                    message:"Tutorial updated successfully"
+ }).then(data=>{         
+  return res.status(200).json({
+  updatedTutorial:{
+  data,
+  message:"Tutorial updated successfully"
                 }
-            })
-        }).catch(err=>{
-            console.log(err)
-            res.status(500).json({message:"Tutorial fail to update", err})
+    })
+     }).catch(err=>{
+         res.status(500).json({message:"Tutorial fail to update", err})
         })
     })
 }
+
 const deleteTutorial=(req, res)=>{
     Tutorial.destroy({
         where:{
@@ -137,6 +136,7 @@ Tutorial.findAll({where:condition})
 })
 
 }
-module.exports={createTutorial, findAllPublished, getAllTutorial, getOneTutorial, updateTutorial, deleteTutorial, deleteAllTutorial}
+module.exports={createTutorial, findAllPublished, getAllTutorial, 
+    getOneTutorial, updateTutorial, deleteTutorial, deleteAllTutorial}
 
 
